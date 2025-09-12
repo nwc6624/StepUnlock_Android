@@ -8,11 +8,11 @@ data class AppRuleEntity(
     @PrimaryKey
     val packageName: String,
     val appName: String,
-    val locked: Boolean = false,
-    val unlockCostCredits: Int = 10,
-    val unlockMinutes: Int = 15,
-    val category: String? = null,
     val iconUri: String? = null,
-    val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis()
+    val creditsPerMinute: Int = 10,
+    val isLocked: Boolean = true,
+    val isEnabled: Boolean = true,
+    val lastUsed: Long = 0L,
+    val totalUsageMinutes: Long = 0L,
+    val createdAt: Long = System.currentTimeMillis()
 )

@@ -29,9 +29,9 @@ sealed class Result<out T> {
         is Error -> null
     }
     
-    fun getOrElse(defaultValue: T): T = when (this) {
+    fun getOrElse(defaultValue: () -> @UnsafeVariance T): T = when (this) {
         is Success -> data
-        is Error -> defaultValue
+        is Error -> defaultValue()
     }
     
     inline fun onSuccess(action: (T) -> Unit): Result<T> {

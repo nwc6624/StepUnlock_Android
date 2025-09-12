@@ -6,40 +6,24 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CreditLedgerDao {
-    
     @Query("SELECT * FROM credit_ledger ORDER BY timestamp DESC")
     fun getAllTransactions(): Flow<List<CreditLedgerEntity>>
     
-    @Query("SELECT * FROM credit_ledger WHERE timestamp >= :startTime AND timestamp <= :endTime ORDER BY timestamp DESC")
-    fun getTransactionsInRange(startTime: Long, endTime: Long): Flow<List<CreditLedgerEntity>>
+    @Query("SELECT SUM(CASE WHEN type = 'EARNED' THEN amount ELSE -amount END) FROM credit_ledger")
+    fun getCurrentBalance(): Flow<Int?>
     
-    @Query("SELECT * FROM credit_ledger WHERE reason = :reason ORDER BY timestamp DESC")
-    fun getTransactionsByReason(reason: String): Flow<List<CreditLedgerEntity>>
-    
-    @Query("SELECT * FROM credit_ledger WHERE habitId = :habitId ORDER BY timestamp DESC")
-    fun getTransactionsByHabit(habitId: String): Flow<List<CreditLedgerEntity>>
-    
-    @Query("SELECT COALESCE(SUM(delta), 0) FROM credit_ledger")
-    suspend fun getTotalCredits(): Int
-    
-    @Query("SELECT COALESCE(SUM(delta), 0) FROM credit_ledger WHERE timestamp >= :startTime AND timestamp <= :endTime")
-    suspend fun getCreditsInRange(startTime: Long, endTime: Long): Int
-    
-    @Query("SELECT COALESCE(SUM(delta), 0) FROM credit_ledger WHERE habitId = :habitId AND timestamp >= :startTime AND timestamp <= :endTime")
-    suspend fun getCreditsByHabitInRange(habitId: String, startTime: Long, endTime: Long): Int
-    
-    @Query("SELECT COUNT(*) FROM credit_ledger WHERE habitId = :habitId AND timestamp >= :startTime AND timestamp <= :endTime AND delta > 0")
-    suspend fun getHabitCompletionCount(habitId: String, startTime: Long, endTime: Long): Int
+    @Query("SELECT * FROM credit_ledger ORDER BY timestamp DESC LIMIT :limit")
+    fun getRecentTransactions(limit: Int = 50): Flow<List<CreditLedgerEntity>>
     
     @Insert
     suspend fun insertTransaction(transaction: CreditLedgerEntity): Long
     
-    @Insert
-    suspend fun insertTransactions(transactions: List<CreditLedgerEntity>)
+    @Query("SELECT * FROM credit_ledger WHERE timestamp >= :startDate AND timestamp <= :endDate ORDER BY timestamp DESC")
+    fun getTransactionsByDateRange(startDate: Long, endDate: Long): Flow<List<CreditLedgerEntity>>
     
-    @Delete
-    suspend fun deleteTransaction(transaction: CreditLedgerEntity)
+    @Query("SELECT * FROM credit_ledger WHERE habitType = :habitType ORDER BY timestamp DESC")
+    fun getTransactionsByHabitType(habitType: String): Flow<List<CreditLedgerEntity>>
     
-    @Query("DELETE FROM credit_ledger WHERE timestamp < :cutoffTime")
-    suspend fun deleteOldTransactions(cutoffTime: Long)
+    @Query("SELECT * FROM credit_ledger WHERE appPackageName = :packageName ORDER BY timestamp DESC")
+    fun getTransactionsByApp(packageName: String): Flow<List<CreditLedgerEntity>>
 }

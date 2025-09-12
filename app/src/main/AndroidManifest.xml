@@ -22,11 +22,10 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.StepUnlock"
+        android:installLocation="preferExternal"
         tools:targetApi="31">
         
         <!-- Main Activity -->
@@ -41,47 +40,6 @@
             </intent-filter>
         </activity>
         
-        <!-- Lock Activity for intercepting locked apps -->
-        <activity
-            android:name=".ui.lock.LockActivity"
-            android:exported="false"
-            android:launchMode="singleTask"
-            android:theme="@style/Theme.StepUnlock.Lock" />
-        
-        <!-- Services -->
-        <service
-            android:name=".services.UsageAccessWatcher"
-            android:enabled="true"
-            android:exported="false" />
-            
-        <service
-            android:name=".services.UnlockTimerService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="dataSync" />
-        
-        <!-- Accessibility Service -->
-        <service
-            android:name=".services.StepUnlockAccessibilityService"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/accessibility_service_config" />
-        </service>
-        
-        <!-- Boot Receiver -->
-        <receiver
-            android:name=".receivers.BootReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
         
     </application>
 
