@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">StepUnlock</string>
+    
+    <!-- Onboarding -->
+    <string name="onboarding_title_welcome">Welcome to StepUnlock</string>
+    <string name="onboarding_description_welcome">Earn screen time on distracting apps by completing positive actions like walking, focusing, and staying hydrated.</string>
+    
+    <string name="onboarding_title_privacy">Privacy First</string>
+    <string name="onboarding_description_privacy">All your data stays on your device. No accounts required, no cloud sync, complete privacy.</string>
+    
+    <string name="onboarding_title_ready">Ready to Start?</string>
+    <string name="onboarding_description_ready">Let\'s set up permissions and choose which apps you\'d like to lock.</string>
+    
+    <string name="button_next">Next</string>
+    <string name="button_previous">Previous</string>
+    <string name="button_get_started">Get Started</string>
+    
+    <!-- Home Screen -->
+    <string name="home_greeting_morning">Good morning!</string>
+    <string name="home_greeting_afternoon">Good afternoon!</string>
+    <string name="home_greeting_evening">Good evening!</string>
+    <string name="home_ready_to_earn">Ready to earn some credits?</string>
+    <string name="home_credits_balance">Credits Balance</string>
+    <string name="home_earn_credits">Earn Credits</string>
+    <string name="home_quick_actions">Quick Actions</string>
+    <string name="home_todays_progress">Today\'s Progress</string>
+    <string name="home_locked_apps">Locked Apps</string>
+    <string name="home_manage">Manage</string>
+    <string name="home_apps_locked">apps locked</string>
+    
+    <!-- Lock Screen -->
+    <string name="lock_app_locked">%1$s is locked</string>
+    <string name="lock_description">Complete positive actions to earn credits and unlock this app</string>
+    <string name="lock_your_credits">Your Credits</string>
+    <string name="lock_cost">Cost: %1$d credits</string>
+    <string name="lock_select_duration">Select unlock duration:</string>
+    <string name="lock_earn_credits">Earn Credits</string>
+    <string name="lock_unlock">Unlock %1$dm</string>
+    <string name="lock_need_more_credits">You need %1$d more credits</string>
+    
+    <!-- Quick Actions -->
+    <string name="action_start_focus">Start Focus</string>
+    <string name="action_log_water">Log Water</string>
+    <string name="action_add_steps">Add Steps</string>
+    <string name="action_journal">Journal</string>
+    
+    <!-- Habits -->
+    <string name="habit_steps">Steps</string>
+    <string name="habit_pomodoro">Focus Sessions</string>
+    <string name="habit_water">Water</string>
+    <string name="habit_journal">Journaling</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_apps">Apps</string>
+    <string name="nav_actions">Actions</string>
+    <string name="nav_history">History</string>
+    <string name="nav_settings">Settings</string>
+    
+    <!-- Permissions -->
+    <string name="permission_usage_access_title">Usage Access Permission</string>
+    <string name="permission_usage_access_description">This permission is required to detect which apps you\'re using and show the lock screen when needed.</string>
+    <string name="permission_system_alert_window_title">Display Over Other Apps</string>
+    <string name="permission_system_alert_window_description">This permission allows StepUnlock to display the lock screen over other apps.</string>
+    <string name="permission_accessibility_title">Accessibility Service</string>
+    <string name="permission_accessibility_description">This service provides more reliable app blocking across different device manufacturers.</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_blocking_method">Blocking Method</string>
+    <string name="settings_save_credits_across_days">Save Credits Across Days</string>
+    <string name="settings_max_daily_credits">Max Daily Credits</string>
+    <string name="settings_low_battery_mode">Low Battery Mode</string>
+    <string name="settings_grace_period">Grace Period (seconds)</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_haptics">Haptics</string>
+    
+    <!-- Errors -->
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_no_permissions">Required permissions not granted</string>
+    <string name="error_insufficient_credits">Insufficient credits</string>
+    
+    <!-- Success -->
+    <string name="success_credits_earned">%1$d credits earned!</string>
+    <string name="success_app_unlocked">App unlocked for %1$d minutes</string>
+</resources>
