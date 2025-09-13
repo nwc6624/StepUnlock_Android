@@ -24,6 +24,8 @@ import androidx.navigation.compose.rememberNavController
 import com.stepunlock.app.ui.screens.home.HomeScreen
 import com.stepunlock.app.ui.screens.onboarding.OnboardingScreen
 import com.stepunlock.app.ui.screens.apps.AppsScreen
+import com.stepunlock.app.ui.screens.actions.ActionsScreen
+import com.stepunlock.app.ui.screens.history.HistoryScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,13 +112,11 @@ fun StepUnlockNavigation(
                 }
                 
                 composable(Screen.Actions.route) {
-                    // TODO: Implement ActionsScreen
-                    PlaceholderScreen("Habit Tracking")
+                    ActionsScreen()
                 }
                 
                 composable(Screen.History.route) {
-                    // TODO: Implement HistoryScreen
-                    PlaceholderScreen("History & Analytics")
+                    HistoryScreen()
                 }
                 
                 composable(Screen.Settings.route) {
