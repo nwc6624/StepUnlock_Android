@@ -34,14 +34,12 @@ fun StepUnlockNavigation(
     val currentDestination = navBackStackEntry?.destination
     
     // Check if we should show onboarding
-    val showOnboarding by remember { mutableStateOf(true) } // TODO: Replace with actual first launch check
+    var showOnboarding by remember { mutableStateOf(true) } // TODO: Replace with actual first launch check
     
     if (showOnboarding) {
         OnboardingScreen(
             onNavigateToHome = {
-                navController.navigate(Screen.Home.route) {
-                    popUpTo(Screen.Onboarding.route) { inclusive = true }
-                }
+                showOnboarding = false
             }
         )
     } else {
