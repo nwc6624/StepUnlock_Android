@@ -40,6 +40,21 @@
             </intent-filter>
         </activity>
         
+        <!-- Lock Activity -->
+        <activity
+            android:name=".ui.lock.LockActivity"
+            android:exported="false"
+            android:theme="@style/Theme.StepUnlock"
+            android:launchMode="singleTask"
+            android:excludeFromRecents="true" />
+        
+        <!-- App Blocking Service -->
+        <service
+            android:name=".services.AppBlockingService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+        
         
     </application>
 

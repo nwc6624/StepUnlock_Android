@@ -1,12 +1,14 @@
 package com.stepunlock.app
 
 import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class StepUnlockApplication : Application() {
     
     override fun onCreate() {
         super.onCreate()
-        
-        // TODO: Initialize default data when we add back the data layer
+        // Database and dependencies are initialized by Hilt
+        // TODO: Initialize default data
     }
 }

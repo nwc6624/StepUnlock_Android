@@ -23,6 +23,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.stepunlock.app.ui.screens.home.HomeScreen
 import com.stepunlock.app.ui.screens.onboarding.OnboardingScreen
+import com.stepunlock.app.ui.screens.apps.AppsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,8 +106,7 @@ fun StepUnlockNavigation(
                 }
                 
                 composable(Screen.Apps.route) {
-                    // TODO: Implement AppsScreen
-                    PlaceholderScreen("Apps Management")
+                    AppsScreen()
                 }
                 
                 composable(Screen.Actions.route) {

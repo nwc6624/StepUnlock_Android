@@ -2,6 +2,8 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-parcelize")
+    id("com.google.devtools.ksp")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -84,6 +86,30 @@ dependencies {
     
     // Splash Screen
     implementation("androidx.core:core-splashscreen:1.0.1")
+    
+    // Room database
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+    
+    // DataStore for settings
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    
+    // WorkManager for background tasks
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    
+    // Permissions
+    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
+    
+    // Hilt for dependency injection
+    implementation("com.google.dagger:hilt-android:2.48")
+    ksp("com.google.dagger:hilt-compiler:2.48")
+    
+    // Hilt Compose integration
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     
     // Testing
     testImplementation("junit:junit:4.13.2")
