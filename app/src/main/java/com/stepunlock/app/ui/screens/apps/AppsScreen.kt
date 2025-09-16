@@ -1,9 +1,11 @@
 package com.stepunlock.app.ui.screens.apps
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -11,19 +13,24 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import com.stepunlock.app.data.model.AppRule
+import com.stepunlock.app.data.repository.AppCategory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppsScreen(
     viewModel: AppsViewModel = remember { AppsViewModel() }
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     
     LaunchedEffect(Unit) {
-        viewModel.loadApps()
+        viewModel.loadApps(context)
     }
     
     Column(
@@ -134,39 +141,12 @@ fun AppsScreen(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Placeholder for app items - will be implemented later
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.PhoneAndroid,
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "No Apps Found",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "App detection will be implemented soon",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
+                items(uiState.filteredApps) { app ->
+                    AppItem(
+                        app = app,
+                        onToggleLock = { viewModel.toggleAppLock(app.packageName) },
+                        onUpdateCost = { cost -> viewModel.updateAppCost(app.packageName, cost) }
+                    )
                 }
                 
                 if (uiState.filteredApps.isEmpty()) {
@@ -311,6 +291,126 @@ fun AppItem(
     }
 }
 
-enum class AppFilter {
-    ALL, LOCKED, SOCIAL, ENTERTAINMENT, GAMES
+@Composable
+fun AppItem(
+    app: AppRule,
+    onToggleLock: () -> Unit,
+    onUpdateCost: (Int) -> Unit
+) {
+    var showCostDialog by remember { mutableStateOf(false) }
+    var costInput by remember { mutableStateOf(app.unlockCost.toString()) }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // App Icon (placeholder)
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(
+                        color = when (app.category) {
+                            AppCategory.SOCIAL.name -> Color(0xFF2196F3)
+                            AppCategory.ENTERTAINMENT.name -> Color(0xFF9C27B0)
+                            AppCategory.GAMES.name -> Color(0xFFFF9800)
+                            AppCategory.PRODUCTIVITY.name -> Color(0xFF4CAF50)
+                            AppCategory.UTILITIES.name -> Color(0xFF607D8B)
+                            AppCategory.OTHER.name -> Color(0xFF795548)
+                            else -> Color(0xFF795548)
+                        },
+                        shape = RoundedCornerShape(12.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = when (app.category) {
+                        AppCategory.SOCIAL.name -> Icons.Default.People
+                        AppCategory.ENTERTAINMENT.name -> Icons.Default.PlayArrow
+                        AppCategory.GAMES.name -> Icons.Default.Games
+                        AppCategory.PRODUCTIVITY.name -> Icons.Default.Work
+                        AppCategory.UTILITIES.name -> Icons.Default.Build
+                        AppCategory.OTHER.name -> Icons.Default.Apps
+                        else -> Icons.Default.Apps
+                    },
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // App Info
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = app.appName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = app.packageName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "${app.unlockCost} credits to unlock",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            // Lock Toggle
+            Switch(
+                checked = app.isLocked,
+                onCheckedChange = { onToggleLock() }
+            )
+        }
+    }
+
+    // Cost Dialog
+    if (showCostDialog) {
+        AlertDialog(
+            onDismissRequest = { showCostDialog = false },
+            title = { Text("Set Unlock Cost") },
+            text = {
+                Column {
+                    Text("How many credits should it cost to unlock ${app.appName}?")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = costInput,
+                        onValueChange = { costInput = it },
+                        label = { Text("Credits") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val cost = costInput.toIntOrNull() ?: app.unlockCost
+                        onUpdateCost(cost)
+                        showCostDialog = false
+                    }
+                ) {
+                    Text("Set")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showCostDialog = false }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }

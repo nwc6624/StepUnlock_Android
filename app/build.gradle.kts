@@ -3,7 +3,6 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("kotlin-parcelize")
     id("com.google.devtools.ksp")
-    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -101,12 +100,12 @@ dependencies {
     // Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
     
-    // Hilt for dependency injection
-    implementation("com.google.dagger:hilt-android:2.48")
-    ksp("com.google.dagger:hilt-compiler:2.48")
-    
-    // Hilt Compose integration
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    // Hilt for dependency injection (temporarily disabled)
+    // implementation("com.google.dagger:hilt-android:2.48")
+    // ksp("com.google.dagger:hilt-compiler:2.48")
+
+    // Hilt Compose integration (temporarily disabled)
+    // implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
