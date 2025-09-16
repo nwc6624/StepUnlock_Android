@@ -39,7 +39,7 @@ class HabitRepositoryImpl @Inject constructor(
         habitProgressDao.updateProgress(progress)
     
     override suspend fun updateHabitProgress(habitType: String, date: String, value: Int, completed: Boolean) = 
-        habitProgressDao.updateHabitProgress(habitType, date, value, completed)
+        habitProgressDao.updateHabitProgress(habitType, date, value, completed, System.currentTimeMillis())
     
     override suspend fun deleteProgress(progress: HabitProgressEntity) = 
         habitProgressDao.deleteProgress(progress)
