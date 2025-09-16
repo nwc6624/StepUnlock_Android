@@ -366,7 +366,7 @@ fun QuickStatsCard(
             StatItem(
                 icon = Icons.Default.TrendingUp,
                 label = "Progress",
-                value = "${(completedToday * 100 / totalHabits)}%",
+                value = "${if (totalHabits > 0) (completedToday * 100 / totalHabits) else 0}%",
                 color = Color(0xFF4CAF50)
             )
         }
