@@ -179,10 +179,10 @@ fun HabitActionCard(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
+                    modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
@@ -194,7 +194,9 @@ fun HabitActionCard(
                     
                     Spacer(modifier = Modifier.width(12.dp))
                     
-                    Column {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Text(
                             text = habitAction.name,
                             style = MaterialTheme.typography.titleMedium,
@@ -207,6 +209,8 @@ fun HabitActionCard(
                         )
                     }
                 }
+                
+                Spacer(modifier = Modifier.width(8.dp))
                 
                 Text(
                     text = "+${habitAction.creditsPerCompletion}",
@@ -233,13 +237,13 @@ fun HabitActionCard(
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "${habitAction.currentValue}/${habitAction.targetValue} ${habitAction.unit}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
                 )
                 
                 if (habitAction.isCompleted) {
