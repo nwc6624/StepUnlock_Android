@@ -25,6 +25,8 @@ import com.stepunlock.app.ui.screens.home.HomeScreen
 import com.stepunlock.app.ui.screens.onboarding.OnboardingScreen
 import com.stepunlock.app.ui.screens.actions.ActionsScreen
 import com.stepunlock.app.ui.screens.history.HistoryScreen
+import com.stepunlock.app.ui.screens.settings.SettingsScreen
+import com.stepunlock.app.ui.screens.apps.AppsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,7 +109,7 @@ fun StepUnlockNavigation(
                 }
                 
                         composable(Screen.Apps.route) {
-                            PlaceholderScreen("Apps")
+                            AppsScreen()
                         }
                 
                 composable(Screen.Actions.route) {
@@ -119,8 +121,7 @@ fun StepUnlockNavigation(
                 }
                 
                 composable(Screen.Settings.route) {
-                    // TODO: Implement SettingsScreen
-                    PlaceholderScreen("Settings")
+                    SettingsScreen()
                 }
             }
         }
