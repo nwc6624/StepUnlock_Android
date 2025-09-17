@@ -6,6 +6,7 @@ StepUnlock is an Android app that helps you reduce doomscrolling by turning acce
 
 ## Features
 
+
 ### Core Mechanics
 - **App Locking**: Select which apps or app categories to lock
 - **Credit System**: Earn credits by completing positive actions
