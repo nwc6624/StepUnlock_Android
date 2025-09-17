@@ -20,6 +20,9 @@ interface CreditTransactionDao {
 
     @Query("SELECT SUM(CASE WHEN type = 'EARNED' THEN amount ELSE -amount END) FROM credit_transactions")
     suspend fun getCurrentBalance(): Int
+    
+    @Query("SELECT SUM(CASE WHEN type = 'EARNED' THEN amount ELSE -amount END) FROM credit_transactions")
+    fun getTotalCredits(): Flow<Int?>
 
     @Insert
     suspend fun insertTransaction(transaction: CreditTransaction)

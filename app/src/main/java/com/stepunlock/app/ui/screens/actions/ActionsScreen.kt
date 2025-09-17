@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -26,7 +27,12 @@ import kotlinx.coroutines.delay
 fun ActionsScreen(
     viewModel: ActionsViewModel = remember { ActionsViewModel() }
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
+    
+    LaunchedEffect(Unit) {
+        viewModel.initialize(context)
+    }
     
     LaunchedEffect(Unit) {
         viewModel.loadTodayProgress()

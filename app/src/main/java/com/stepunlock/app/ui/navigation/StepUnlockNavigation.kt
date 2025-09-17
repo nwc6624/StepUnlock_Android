@@ -23,7 +23,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.stepunlock.app.ui.screens.home.HomeScreen
 import com.stepunlock.app.ui.screens.onboarding.OnboardingScreen
-import com.stepunlock.app.ui.screens.apps.AppsScreen
 import com.stepunlock.app.ui.screens.actions.ActionsScreen
 import com.stepunlock.app.ui.screens.history.HistoryScreen
 
@@ -107,9 +106,9 @@ fun StepUnlockNavigation(
                     HomeScreen()
                 }
                 
-                composable(Screen.Apps.route) {
-                    AppsScreen()
-                }
+                        composable(Screen.Apps.route) {
+                            PlaceholderScreen("Apps")
+                        }
                 
                 composable(Screen.Actions.route) {
                     ActionsScreen()

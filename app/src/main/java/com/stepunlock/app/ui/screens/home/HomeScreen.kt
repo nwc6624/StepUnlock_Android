@@ -24,13 +24,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = remember { HomeViewModel() }
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
+    
+    LaunchedEffect(Unit) {
+        viewModel.initialize(context)
+        
+        // Test credit system after a delay
+        kotlinx.coroutines.delay(3000)
+        viewModel.testCreditSystem()
+    }
     
     val infiniteTransition = rememberInfiniteTransition(label = "floating")
     val floatingOffset by infiniteTransition.animateFloat(
@@ -96,6 +107,19 @@ fun HomeScreen(
             
             Spacer(modifier = Modifier.height(16.dp))
             
+            // Test button for debugging
+            Button(
+                onClick = { 
+                    android.util.Log.d("HomeScreen", "Test button clicked")
+                    viewModel.performQuickAction(HabitType.POMODORO) 
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Test: Earn 25 Credits (Pomodoro)")
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = PaddingValues(horizontal = 4.dp)
@@ -103,7 +127,10 @@ fun HomeScreen(
                 items(getQuickActions()) { action ->
                     QuickActionCard(
                         action = action,
-                        onClick = { viewModel.performQuickAction(action.type) }
+                        onClick = { 
+                            android.util.Log.d("HomeScreen", "Quick action clicked: ${action.type}")
+                            viewModel.performQuickAction(action.type) 
+                        }
                     )
                 }
             }

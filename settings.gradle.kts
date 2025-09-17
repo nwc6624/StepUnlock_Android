@@ -15,6 +15,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "StepUnlock"
 include(":app")
-include(":core")
-include(":data")
-include(":domain")
+// include(":core")
+// include(":data")
+// include(":domain")

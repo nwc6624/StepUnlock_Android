@@ -13,7 +13,7 @@ interface HabitProgressDao {
     fun getProgressForDate(date: String): Flow<List<HabitProgress>>
 
     @Query("SELECT * FROM habit_progress WHERE habitType = :habitType AND date = :date")
-    suspend fun getHabitProgress(habitType: String, date: String): HabitProgress?
+    fun getHabitProgress(habitType: String, date: String): Flow<HabitProgress?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProgress(progress: HabitProgress)

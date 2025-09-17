@@ -12,6 +12,7 @@ import com.stepunlock.app.data.model.CreditTransaction
 import com.stepunlock.app.data.model.HabitProgress
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -34,23 +35,29 @@ class StepUnlockRepository(context: Context) {
     // Credit Transactions
     suspend fun getAllTransactions(): Flow<List<CreditTransaction>> = creditTransactionDao.getAllTransactions()
     suspend fun getTransactionsByType(type: String): Flow<List<CreditTransaction>> = creditTransactionDao.getTransactionsByType(type)
-    suspend fun getCurrentBalance(): Int = creditTransactionDao.getCurrentBalance()
+    suspend fun getCurrentBalance(): Int {
+        val balance = creditTransactionDao.getCurrentBalance()
+        android.util.Log.d("StepUnlockRepository", "Current balance: $balance")
+        return balance
+    }
     suspend fun insertTransaction(transaction: CreditTransaction) = creditTransactionDao.insertTransaction(transaction)
-    suspend fun earnCredits(amount: Int, reason: String) {
+    suspend fun earnCredits(amount: Int, description: String) {
+        android.util.Log.d("StepUnlockRepository", "Earning $amount credits: $description")
         val transaction = CreditTransaction(
             amount = amount,
             type = "EARNED",
-            reason = reason
+            description = description
         )
         insertTransaction(transaction)
+        android.util.Log.d("StepUnlockRepository", "Credits earned successfully")
     }
-    suspend fun spendCredits(amount: Int, reason: String): Boolean {
+    suspend fun spendCredits(amount: Int, description: String): Boolean {
         val currentBalance = getCurrentBalance()
         if (currentBalance >= amount) {
             val transaction = CreditTransaction(
-                amount = amount,
+                amount = -amount,
                 type = "SPENT",
-                reason = reason
+                description = description
             )
             insertTransaction(transaction)
             return true
@@ -61,12 +68,18 @@ class StepUnlockRepository(context: Context) {
     // Habit Progress
     suspend fun getAllProgress(): Flow<List<HabitProgress>> = habitProgressDao.getAllProgress()
     suspend fun getProgressForDate(date: String): Flow<List<HabitProgress>> = habitProgressDao.getProgressForDate(date)
-    suspend fun getHabitProgress(habitType: String, date: String): HabitProgress? = habitProgressDao.getHabitProgress(habitType, date)
+    fun getHabitProgress(habitType: String, date: String): Flow<HabitProgress?> = habitProgressDao.getHabitProgress(habitType, date)
     suspend fun insertProgress(progress: HabitProgress) = habitProgressDao.insertProgress(progress)
     suspend fun updateProgress(progress: HabitProgress) = habitProgressDao.updateProgress(progress)
     suspend fun updateHabitProgress(habitType: String, date: String, value: Int, completed: Boolean) {
         habitProgressDao.updateHabitProgress(habitType, date, value, completed)
     }
+    
+    suspend fun updateHabitProgress(progress: HabitProgress) {
+        habitProgressDao.updateProgress(progress)
+    }
+    
+    fun getTotalCredits(): Flow<Int?> = creditTransactionDao.getTotalCredits()
 
     // Initialize default data
     suspend fun initializeDefaultData() {
@@ -74,14 +87,15 @@ class StepUnlockRepository(context: Context) {
         
         // Initialize default habit progress
         val defaultHabits = listOf(
-            HabitProgress("steps_$today", "steps", today, 0, 10000, false),
-            HabitProgress("pomodoro_$today", "pomodoro", today, 0, 4, false),
-            HabitProgress("water_$today", "water", today, 0, 8, false),
-            HabitProgress("journaling_$today", "journaling", today, 0, 1, false)
+            HabitProgress(today, "steps", 10000, 0, false),
+            HabitProgress(today, "pomodoro", 4, 0, false),
+            HabitProgress(today, "water", 8, 0, false),
+            HabitProgress(today, "journaling", 1, 0, false)
         )
         
         for (habit in defaultHabits) {
-            if (getHabitProgress(habit.habitType, habit.date) == null) {
+            val existingProgress = getHabitProgress(habit.habitType, habit.date).firstOrNull()
+            if (existingProgress == null) {
                 insertProgress(habit)
             }
         }

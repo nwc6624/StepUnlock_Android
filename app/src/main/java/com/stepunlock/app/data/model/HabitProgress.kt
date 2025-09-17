@@ -1,10 +1,10 @@
-package com.stepunlock.app.data.entity
+package com.stepunlock.app.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "habit_progress")
-data class HabitProgressEntity(
+data class HabitProgress(
     @PrimaryKey
     val date: String, // YYYY-MM-DD format
     val habitType: String, // "steps", "pomodoro", "water", "journaling"

@@ -13,9 +13,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     
-    <!-- Optional Google Fit permission -->
-    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+            <!-- Optional Google Fit permission -->
+            <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+            <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+            
 
     <application
         android:name=".StepUnlockApplication"
@@ -48,12 +49,19 @@
             android:launchMode="singleTask"
             android:excludeFromRecents="true" />
         
-        <!-- App Blocking Service -->
-        <service
-            android:name=".services.AppBlockingService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="dataSync" />
+            <!-- App Blocking Service -->
+            <service
+                android:name=".services.AppBlockingService"
+                android:enabled="true"
+                android:exported="false"
+                android:foregroundServiceType="dataSync" />
+            
+            <!-- Step Tracking Service -->
+            <service
+                android:name=".services.StepTrackingService"
+                android:enabled="true"
+                android:exported="false"
+                android:foregroundServiceType="dataSync" />
         
         
     </application>
