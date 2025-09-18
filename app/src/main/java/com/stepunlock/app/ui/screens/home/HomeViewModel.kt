@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import com.stepunlock.app.data.repository.StepTrackingRepository
 import com.stepunlock.app.data.repository.StepUnlockRepository
+import com.stepunlock.app.data.services.AppService
+import com.stepunlock.app.data.events.EarnEvent
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -23,16 +25,13 @@ class HomeViewModel : ViewModel() {
     
     private var stepTrackingRepository: StepTrackingRepository? = null
     private var stepUnlockRepository: StepUnlockRepository? = null
-    
-    // Simple state management for habit progress
-    private var currentPomodoros = 2
-    private var currentWater = 6
-    private var currentJournal = 1
+    private var appService: AppService? = null
 
     fun initialize(context: Context) {
         android.util.Log.d("HomeViewModel", "Initializing HomeViewModel")
         stepTrackingRepository = StepTrackingRepository(context)
         stepUnlockRepository = StepUnlockRepository(context)
+        appService = AppService()
         
         viewModelScope.launch {
             android.util.Log.d("HomeViewModel", "Starting step tracking initialization")
@@ -56,19 +55,22 @@ class HomeViewModel : ViewModel() {
                 val currentSteps = stepTrackingRepository?.currentSteps?.value ?: 0
                 val stepsProgress = (currentSteps / 10000f).coerceAtMost(1f)
                 
-                // Get real credit balance from database
-                val creditsBalance = stepUnlockRepository?.getCurrentBalance() ?: 100
-                
-                // Get real locked apps count
+                // Get data from AppService
+                val creditsBalance = appService?.getCurrentBalance() ?: 100
                 val lockedAppsCount = getLockedAppsCount()
+                
+                // Get habit progress from AppService
+                val pomodoroProgress = appService?.getTodayProgress("focus_session")?.valueSoFar ?: 0
+                val waterProgress = appService?.getTodayProgress("hydration")?.valueSoFar ?: 0
+                val journalProgress = appService?.getTodayProgress("journaling")?.valueSoFar ?: 0
                 
                 _uiState.value = HomeUiState(
                     creditsBalance = creditsBalance,
                     stepsToday = currentSteps,
                     stepsProgress = stepsProgress,
-                    pomodorosCompleted = currentPomodoros,
-                    waterGlasses = currentWater,
-                    journalEntries = currentJournal,
+                    pomodorosCompleted = pomodoroProgress,
+                    waterGlasses = waterProgress,
+                    journalEntries = journalProgress,
                     lockedAppsCount = lockedAppsCount,
                     streakCount = calculateStreak(), // Calculate real streak
                     isLoading = false
@@ -79,8 +81,8 @@ class HomeViewModel : ViewModel() {
                 // Start observing step changes
                 observeStepChanges()
                 
-                // Start observing habit progress changes
-                observeHabitProgressChanges()
+                // Start observing AppService changes
+                observeAppServiceChanges()
                 
             } catch (e: Exception) {
                 android.util.Log.e("HomeViewModel", "Error loading data", e)
@@ -103,38 +105,48 @@ class HomeViewModel : ViewModel() {
         }
     }
     
-    private fun observeHabitProgressChanges() {
+    private fun observeAppServiceChanges() {
         viewModelScope.launch {
-            val today = dateFormatter.format(Date())
-            
-            // Observe pomodoro progress
-            stepUnlockRepository?.getHabitProgress("pomodoro", today)?.collect { progress ->
+            appService?.appState?.collect { appState ->
+                val currentSteps = stepTrackingRepository?.currentSteps?.value ?: 0
+                val stepsProgress = (currentSteps / 10000f).coerceAtMost(1f)
+                
+                val pomodoroProgress = appService?.getTodayProgress("focus_session")?.valueSoFar ?: 0
+                val waterProgress = appService?.getTodayProgress("hydration")?.valueSoFar ?: 0
+                val journalProgress = appService?.getTodayProgress("journaling")?.valueSoFar ?: 0
+                
                 _uiState.value = _uiState.value.copy(
-                    pomodorosCompleted = progress?.currentValue ?: 0
+                    creditsBalance = appState.wallet.balance,
+                    stepsToday = currentSteps,
+                    stepsProgress = stepsProgress,
+                    pomodorosCompleted = pomodoroProgress,
+                    waterGlasses = waterProgress,
+                    journalEntries = journalProgress,
+                    isLoading = appState.isLoading,
+                    error = appState.error
                 )
             }
         }
-        
+    }
+    
+    private fun refreshUIState() {
         viewModelScope.launch {
-            val today = dateFormatter.format(Date())
+            val currentSteps = stepTrackingRepository?.currentSteps?.value ?: 0
+            val stepsProgress = (currentSteps / 10000f).coerceAtMost(1f)
             
-            // Observe water progress
-            stepUnlockRepository?.getHabitProgress("water", today)?.collect { progress ->
-                _uiState.value = _uiState.value.copy(
-                    waterGlasses = progress?.currentValue ?: 0
-                )
-            }
-        }
-        
-        viewModelScope.launch {
-            val today = dateFormatter.format(Date())
+            val creditsBalance = appService?.getCurrentBalance() ?: _uiState.value.creditsBalance
+            val pomodoroProgress = appService?.getTodayProgress("focus_session")?.valueSoFar ?: 0
+            val waterProgress = appService?.getTodayProgress("hydration")?.valueSoFar ?: 0
+            val journalProgress = appService?.getTodayProgress("journaling")?.valueSoFar ?: 0
             
-            // Observe journal progress
-            stepUnlockRepository?.getHabitProgress("journaling", today)?.collect { progress ->
-                _uiState.value = _uiState.value.copy(
-                    journalEntries = progress?.currentValue ?: 0
-                )
-            }
+            _uiState.value = _uiState.value.copy(
+                creditsBalance = creditsBalance,
+                stepsToday = currentSteps,
+                stepsProgress = stepsProgress,
+                pomodorosCompleted = pomodoroProgress,
+                waterGlasses = waterProgress,
+                journalEntries = journalProgress
+            )
         }
     }
     
@@ -143,53 +155,32 @@ class HomeViewModel : ViewModel() {
             try {
                 android.util.Log.d("HomeViewModel", "Performing quick action: $habitType")
                 
-                val creditsToEarn = when (habitType) {
-                    HabitType.STEPS -> 10
-                    HabitType.POMODORO -> 25
-                    HabitType.WATER -> 5
-                    HabitType.JOURNAL -> 15
+                val eventType = when (habitType) {
+                    HabitType.STEPS -> "steps"
+                    HabitType.POMODORO -> "focus_session"
+                    HabitType.WATER -> "hydration"
+                    HabitType.JOURNAL -> "journaling"
                 }
                 
-                // Earn credits through the repository
-                stepUnlockRepository?.earnCredits(creditsToEarn, "Completed ${habitType.name.lowercase()} activity")
-                
-                // Update habit progress
-                val today = dateFormatter.format(Date())
-                when (habitType) {
-                    HabitType.STEPS -> {
-                        // Steps are tracked automatically, just earn credits
-                    }
-                    HabitType.POMODORO -> {
-                        currentPomodoros++
-                        stepUnlockRepository?.updateHabitProgress("pomodoro", today, 
-                            currentPomodoros, 
-                            currentPomodoros >= 4)
-                    }
-                    HabitType.WATER -> {
-                        currentWater++
-                        stepUnlockRepository?.updateHabitProgress("water", today, 
-                            currentWater, 
-                            currentWater >= 8)
-                    }
-                    HabitType.JOURNAL -> {
-                        currentJournal++
-                        stepUnlockRepository?.updateHabitProgress("journaling", today, 
-                            currentJournal, 
-                            currentJournal >= 1)
-                    }
-                }
-                
-                // Update UI state immediately with new values
-                val currentBalance = stepUnlockRepository?.getCurrentBalance() ?: _uiState.value.creditsBalance
-                
-                _uiState.value = _uiState.value.copy(
-                    creditsBalance = currentBalance,
-                    pomodorosCompleted = currentPomodoros,
-                    waterGlasses = currentWater,
-                    journalEntries = currentJournal
+                val earnEvent = EarnEvent(
+                    type = eventType,
+                    units = 1,
+                    meta = mapOf("source" to "quick_action")
                 )
                 
-                android.util.Log.d("HomeViewModel", "Earned $creditsToEarn credits for $habitType. New balance: $currentBalance")
+                val result = appService?.earnCredits(earnEvent)
+                
+                if (result?.isSuccess == true) {
+                    val transaction = result.getOrNull()
+                    android.util.Log.d("HomeViewModel", "Successfully earned credits: ${transaction?.amount}")
+                    
+                    // Update UI state with new data
+                    refreshUIState()
+                } else {
+                    val error = result?.exceptionOrNull()?.message ?: "Unknown error"
+                    android.util.Log.e("HomeViewModel", "Failed to earn credits: $error")
+                    _uiState.value = _uiState.value.copy(error = error)
+                }
                 
             } catch (e: Exception) {
                 android.util.Log.e("HomeViewModel", "Error performing quick action", e)
@@ -223,21 +214,6 @@ class HomeViewModel : ViewModel() {
         // TODO: Implement real streak calculation based on consecutive days of habit completion
         // For now, return a mock value
         return 5
-    }
-    
-    private suspend fun getHabitProgressValue(habitType: String, date: String): Int {
-        return try {
-            // For now, return mock data until we implement proper Flow collection
-            when (habitType) {
-                "pomodoro" -> 2
-                "water" -> 6
-                "journaling" -> 1
-                else -> 0
-            }
-        } catch (e: Exception) {
-            android.util.Log.e("HomeViewModel", "Error getting habit progress for $habitType", e)
-            0
-        }
     }
     
     private suspend fun getLockedAppsCount(): Int {

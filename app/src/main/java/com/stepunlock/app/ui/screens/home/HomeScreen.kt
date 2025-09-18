@@ -46,6 +46,16 @@ fun HomeScreen(
         viewModel.testCreditSystem()
     }
     
+    // Show error messages
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let { error ->
+            android.util.Log.e("HomeScreen", "Error: $error")
+            // Clear error after showing it
+            kotlinx.coroutines.delay(3000)
+            viewModel.clearError()
+        }
+    }
+    
     val infiniteTransition = rememberInfiniteTransition(label = "floating")
     val floatingOffset by infiniteTransition.animateFloat(
         initialValue = 0f,
