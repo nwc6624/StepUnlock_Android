@@ -282,7 +282,7 @@ fun HabitActionCard(
                         shape = RoundedCornerShape(18.dp)
                     ) {
                         Text(
-                            text = if (habitAction.requiresInput) "Add" else "Complete",
+                            text = if (habitAction.requiresInput) "Add More" else "Complete",
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -299,6 +299,11 @@ fun HabitActionCard(
             text = {
                 Column {
                     Text("How many ${habitAction.unit} did you complete?")
+                    Text(
+                        text = "You can add multiple instances to earn more credits!",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = inputValue,

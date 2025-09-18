@@ -105,12 +105,22 @@ fun StepUnlockNavigation(
                 }
             ) {
                 composable(Screen.Home.route) {
-                    HomeScreen()
+                    HomeScreen(
+                        onNavigateToApps = { 
+                            navController.navigate(Screen.Apps.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
                 }
                 
-                        composable(Screen.Apps.route) {
-                            AppsScreen()
-                        }
+                composable(Screen.Apps.route) {
+                    AppsScreen()
+                }
                 
                 composable(Screen.Actions.route) {
                     ActionsScreen()

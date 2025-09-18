@@ -27,6 +27,8 @@ class AppsViewModel : ViewModel() {
         packageManager = context.packageManager
         
         viewModelScope.launch {
+            // Sync installed apps with database first
+            stepUnlockRepository?.syncInstalledApps()
             loadInstalledApps()
             observeAppRules()
         }
@@ -36,22 +38,28 @@ class AppsViewModel : ViewModel() {
         try {
             _uiState.value = _uiState.value.copy(isLoading = true)
             
+            // Load apps from database (temporarily using mock data)
             val installedApps = getInstalledApps()
-            
-            // For now, create AppRule objects directly from installed apps
-            // TODO: Load existing rules from database
-            val mergedApps = installedApps.map { installedApp ->
+            val mockApps = installedApps.map { installedApp ->
                 AppRule(
                     packageName = installedApp.packageName,
                     appName = installedApp.appName,
-                    isLocked = false,
-                    unlockCost = 10, // Default cost
+                    isLocked = installedApp.category == "SOCIAL" || installedApp.category == "ENTERTAINMENT",
+                    unlockCost = when(installedApp.category) {
+                        "SOCIAL" -> 15
+                        "ENTERTAINMENT" -> 20
+                        "GAMES" -> 25
+                        else -> 10
+                    },
                     category = installedApp.category
                 )
             }.sortedBy { it.appName }
             
+            val creditBalance = stepUnlockRepository?.getCurrentBalance() ?: 150
+            
             _uiState.value = _uiState.value.copy(
-                allApps = mergedApps,
+                allApps = mockApps,
+                creditBalance = creditBalance,
                 isLoading = false
             )
             
@@ -165,6 +173,9 @@ class AppsViewModel : ViewModel() {
             try {
                 val updatedApp = app.copy(isLocked = !app.isLocked)
                 
+                // Update in database
+                stepUnlockRepository?.updateApp(updatedApp)
+                
                 // Update the app in the current list
                 val currentApps = _uiState.value.allApps.toMutableList()
                 val index = currentApps.indexOfFirst { it.packageName == app.packageName }
@@ -188,6 +199,9 @@ class AppsViewModel : ViewModel() {
             try {
                 val updatedApp = app.copy(unlockCost = newCost)
                 
+                // Update in database
+                stepUnlockRepository?.updateApp(updatedApp)
+                
                 // Update the app in the current list
                 val currentApps = _uiState.value.allApps.toMutableList()
                 val index = currentApps.indexOfFirst { it.packageName == app.packageName }
@@ -201,6 +215,47 @@ class AppsViewModel : ViewModel() {
                 
             } catch (e: Exception) {
                 android.util.Log.e("AppsViewModel", "Error updating unlock cost", e)
+                _uiState.value = _uiState.value.copy(error = e.message)
+            }
+        }
+    }
+    
+    fun unlockApp(app: AppRule) {
+        viewModelScope.launch {
+            try {
+                // Check if user has enough credits
+                val currentBalance = stepUnlockRepository?.getCurrentBalance() ?: 0
+                if (currentBalance >= app.unlockCost) {
+                    // Spend credits
+                    val success = stepUnlockRepository?.spendCredits(app.unlockCost, "Unlocked ${app.appName}") ?: false
+                    
+                    if (success) {
+                        // Temporarily unlock the app (for 30 minutes)
+                        val updatedApp = app.copy(isLocked = false)
+                        stepUnlockRepository?.updateApp(updatedApp)
+                        
+                        // Update the app in the current list
+                        val currentApps = _uiState.value.allApps.toMutableList()
+                        val index = currentApps.indexOfFirst { it.packageName == app.packageName }
+                        if (index != -1) {
+                            currentApps[index] = updatedApp
+                            _uiState.value = _uiState.value.copy(allApps = currentApps)
+                            applyFilters()
+                        }
+                        
+                        android.util.Log.d("AppsViewModel", "Unlocked ${app.appName} for ${app.unlockCost} credits")
+                        
+                        // TODO: Set a timer to re-lock the app after 30 minutes
+                        
+                    } else {
+                        _uiState.value = _uiState.value.copy(error = "Failed to spend credits")
+                    }
+                } else {
+                    _uiState.value = _uiState.value.copy(error = "Not enough credits. Need ${app.unlockCost}, have $currentBalance")
+                }
+                
+            } catch (e: Exception) {
+                android.util.Log.e("AppsViewModel", "Error unlocking app", e)
                 _uiState.value = _uiState.value.copy(error = e.message)
             }
         }
@@ -223,6 +278,7 @@ data class AppsUiState(
     val searchQuery: String = "",
     val currentFilter: AppFilter = AppFilter.ALL,
     val lockedAppsCount: Int = 0,
+    val creditBalance: Int = 0,
     val isLoading: Boolean = true,
     val error: String? = null
 )

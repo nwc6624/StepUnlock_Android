@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.LaunchedEffect
 import com.stepunlock.app.data.model.AppRule
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,19 +44,47 @@ fun AppsScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Apps",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            Column {
+                Text(
+                    text = "Apps",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = "${uiState.lockedAppsCount} locked",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
+            }
             
-            Text(
-                text = "${uiState.lockedAppsCount} locked",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Medium
-            )
+            // Credit balance
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Diamond,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = uiState.creditBalance.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
         }
         
         Spacer(modifier = Modifier.height(16.dp))
@@ -155,10 +184,19 @@ fun AppsScreen(
                     AppItem(
                         app = app,
                         onToggleLock = { viewModel.toggleAppLock(app) },
-                        onUpdateCost = { viewModel.updateUnlockCost(app, it) }
+                        onUpdateCost = { viewModel.updateUnlockCost(app, it) },
+                        onUnlockApp = { viewModel.unlockApp(app) }
                     )
                 }
             }
+        }
+    }
+    
+    // Error handling
+    uiState.error?.let { error ->
+        LaunchedEffect(error) {
+            // Show error snackbar or dialog
+            android.util.Log.e("AppsScreen", "Error: $error")
         }
     }
 }
@@ -167,7 +205,8 @@ fun AppsScreen(
 private fun AppItem(
     app: AppRule,
     onToggleLock: () -> Unit,
-    onUpdateCost: (Int) -> Unit
+    onUpdateCost: (Int) -> Unit,
+    onUnlockApp: () -> Unit
 ) {
     var showCostDialog by remember { mutableStateOf(false) }
     var newCost by remember { mutableStateOf(app.unlockCost.toString()) }
@@ -244,6 +283,19 @@ private fun AppItem(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 if (app.isLocked) {
+                    // Unlock button
+                    Button(
+                        onClick = onUnlockApp,
+                        modifier = Modifier.height(32.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Text(
+                            text = "Unlock (${app.unlockCost})",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    
+                    // Edit cost button
                     IconButton(
                         onClick = { 
                             newCost = app.unlockCost.toString()
